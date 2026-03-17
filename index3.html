@@ -49,6 +49,7 @@
          Куб – 1 м на север<br>
          Сфера – 2 м на восток<br>
          Цилиндр – 3 м на юго-запад
+         абоба
     </div>
 
     <div id="gps-coordinates">
@@ -148,5 +149,27 @@
             });
         })();
     </script>
+
+    <script>
+if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+        (pos) => {
+            console.log('GPS напрямую:', pos.coords);
+            document.getElementById('debug-gps').innerHTML = `
+                Прямой GPS: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}<br>
+                Точность: ${pos.coords.accuracy} м
+            `;
+        },
+        (err) => {
+            console.warn('Ошибка GPS:', err);
+            document.getElementById('debug-gps').innerHTML = `Ошибка GPS: ${err.message}`;
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+    );
+} else {
+    document.getElementById('debug-gps').innerHTML = 'Geolocation не поддерживается';
+}
+</script>
+<div id="debug-gps" style="position: absolute; top: 80px; left: 10px; background: black; color: lime; padding: 5px; z-index: 1001;"></div>
 </body>
 </html>
