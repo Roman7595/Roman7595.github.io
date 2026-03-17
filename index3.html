@@ -49,7 +49,7 @@
          Куб – 1 м на север<br>
          Сфера – 2 м на восток<br>
          Цилиндр – 3 м на юго-запад<br>
-         абобАaaaA
+         абобАaaaAa
     </div>
 
     <div id="gps-coordinates">
@@ -91,62 +91,71 @@
 
     <script>
         (function() {
-            // Элементы для вывода координат
             const latEl = document.getElementById('lat');
             const lngEl = document.getElementById('lng');
             const timestampEl = document.getElementById('timestamp');
 
-            // Форматирование времени с миллисекундами
             function formatTime(date) {
                 return date.toLocaleTimeString() + '.' + String(date.getMilliseconds()).padStart(3, '0');
             }
 
-            // Функция обновления показаний из компонента gps-camera камеры
-            function updateCoordinatesFromAR() {
-                const camera = document.getElementById('camera');
-                if (!camera) return;
-
-                // Получаем компонент gps-camera
-                const gpsComponent = camera.components && camera.components['gps-camera'];
-                if (!gpsComponent) return;
-
-                // Текущая позиция хранится в gpsComponent.currentPosition
-                const pos = gpsComponent.currentPosition;
-                if (pos && typeof pos.latitude === 'number' && typeof pos.longitude === 'number') {
-                    latEl.textContent = pos.latitude.toFixed(6);
-                    lngEl.textContent = pos.longitude.toFixed(6);
+            // Функция обновления интерфейса из объекта позиции
+            function updateDisplay(position) {
+                if (position && typeof position.latitude === 'number' && typeof position.longitude === 'number') {
+                    latEl.textContent = position.latitude.toFixed(6);
+                    lngEl.textContent = position.longitude.toFixed(6);
                     timestampEl.textContent = formatTime(new Date());
                 } else {
-                    // Если координат ещё нет, показываем ожидание
                     latEl.textContent = '--';
                     lngEl.textContent = '--';
                     timestampEl.innerHTML = '<span class="warning">ожидание GPS...</span>';
                 }
             }
 
-            // Обновляем координаты каждую секунду
-            setInterval(updateCoordinatesFromAR, 1000);
-
-            // Дополнительно подписываемся на событие gps-camera-update,
-            // чтобы сразу обновить при появлении первых координат
-            document.querySelector('a-scene').addEventListener('loaded', function () {
+            // Ждём загрузки сцены
+            document.querySelector('a-scene').addEventListener('loaded', function() {
                 const camera = document.getElementById('camera');
-                if (camera) {
-                    camera.addEventListener('gps-camera-update', function() {
-                        updateCoordinatesFromAR(); // мгновенное обновление при изменении
-                    });
 
-                    camera.addEventListener('gps-camera-error', function(evt) {
-                        console.warn('Ошибка GPS в AR.js:', evt.detail);
-                        latEl.textContent = 'ошибка';
-                        lngEl.textContent = 'ошибка';
-                        timestampEl.innerHTML = '<span class="warning">ошибка GPS</span>';
-                    });
-                }
+                // Подписываемся на событие обновления GPS от AR.js
+                camera.addEventListener('gps-camera-update', function(evt) {
+                    // Координаты приходят в evt.detail.position
+                    if (evt.detail && evt.detail.position) {
+                        updateDisplay(evt.detail.position);
+                    }
+                });
+
+                camera.addEventListener('gps-camera-error', function(evt) {
+                    console.warn('Ошибка GPS:', evt.detail);
+                    latEl.textContent = 'ошибка';
+                    lngEl.textContent = 'ошибка';
+                    timestampEl.innerHTML = '<span class="warning">ошибка GPS</span>';
+                });
+
+                // Резервное чтение из компонента (если событие не сработало, но координаты уже есть)
+                setTimeout(() => {
+                    const gpsComp = camera.components && camera.components['gps-camera'];
+                    if (gpsComp && gpsComp.currentPosition) {
+                        updateDisplay(gpsComp.currentPosition);
+                    }
+                }, 1000);
             });
 
-            // Первоначальное обновление (если компонент уже готов)
-            setTimeout(updateCoordinatesFromAR, 500);
+            // Также обновляем время каждую секунду (для неподвижного состояния)
+            setInterval(() => {
+                const camera = document.getElementById('camera');
+                if (camera) {
+                    const gpsComp = camera.components && camera.components['gps-camera'];
+                    if (gpsComp && gpsComp.currentPosition) {
+                        // Если координаты есть, обновляем время (они не меняются)
+                        timestampEl.textContent = formatTime(new Date());
+                    } else {
+                        // Если координат всё ещё нет, показываем ожидание
+                        if (latEl.textContent === '--' || latEl.textContent === 'ошибка') {
+                            timestampEl.innerHTML = '<span class="warning">ожидание GPS...</span>';
+                        }
+                    }
+                }
+            }, 1000);
         })();
     </script>
 
