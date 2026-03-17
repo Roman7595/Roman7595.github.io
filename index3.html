@@ -48,7 +48,8 @@
     <div id="info">
          Куб – 1 м на север<br>
          Сфера – 2 м на восток<br>
-         Цилиндр – 3 м на юго-запад
+         Цилиндр – 3 м на юго-запад<br>
+         абоб
     </div>
 
     <div id="gps-coordinates">
@@ -91,29 +92,17 @@
 
     <script>
         (function() {
-            // Функция для форматирования времени
-            function formatTime(date) {
-                return date.toLocaleTimeString() + '.' + date.getMilliseconds();
-            }
-
-            // Получаем элементы для вывода координат
+            // Элементы для вывода координат
             const latEl = document.getElementById('lat');
             const lngEl = document.getElementById('lng');
             const timestampEl = document.getElementById('timestamp');
 
-            // Функция обновления координат на экране
-            function updateCoordinates(position) {
-                if (position) {
-                    latEl.textContent = position.latitude.toFixed(6);
-                    lngEl.textContent = position.longitude.toFixed(6);
-                    timestampEl.textContent = formatTime(new Date());
-                } else {
-                    latEl.textContent = '--';
-                    lngEl.textContent = '--';
-                    timestampEl.innerHTML = '<span class="warning">ожидание GPS...</span>';
-                }
+            // Форматирование времени с миллисекундами
+            function formatTime(date) {
+                return date.toLocaleTimeString() + '.' + String(date.getMilliseconds()).padStart(3, '0');
             }
 
+            // Функция обновления показаний из компонента gps-camera камеры
             function updateCoordinatesFromAR() {
                 const camera = document.getElementById('camera');
                 if (!camera) return;
@@ -136,41 +125,29 @@
                 }
             }
 
+            // Обновляем координаты каждую секунду
             setInterval(updateCoordinatesFromAR, 1000);
 
-
-            // Ждём загрузки сцены и получения доступа к камере
+            // Дополнительно подписываемся на событие gps-camera-update,
+            // чтобы сразу обновить при появлении первых координат
             document.querySelector('a-scene').addEventListener('loaded', function () {
-                const cameraEl = document.getElementById('camera');
+                const camera = document.getElementById('camera');
+                if (camera) {
+                    camera.addEventListener('gps-camera-update', function() {
+                        updateCoordinatesFromAR(); // мгновенное обновление при изменении
+                    });
 
-                // Если координаты уже доступны (например, из предыдущей сессии), покажем их
-                if (cameraEl.components && cameraEl.components['gps-camera']) {
-                    const currentPos = cameraEl.components['gps-camera'].currentPosition;
-                    if (currentPos) {
-                        updateCoordinates(currentPos);
-                    } else {
-                        updateCoordinates(null);
-                    }
-                } else {
-                    updateCoordinates(null);
+                    camera.addEventListener('gps-camera-error', function(evt) {
+                        console.warn('Ошибка GPS в AR.js:', evt.detail);
+                        latEl.textContent = 'ошибка';
+                        lngEl.textContent = 'ошибка';
+                        timestampEl.innerHTML = '<span class="warning">ошибка GPS</span>';
+                    });
                 }
-
-                // Слушаем событие обновления GPS-позиции
-                cameraEl.addEventListener('gps-camera-update', function(evt) {
-                    // В evt.detail содержится { position: { latitude, longitude, altitude } }
-                    if (evt.detail && evt.detail.position) {
-                        updateCoordinates(evt.detail.position);
-                    }
-                });
-
-                // Также можно обработать ошибку, если она возникнет
-                cameraEl.addEventListener('gps-camera-error', function(evt) {
-                    console.warn('GPS ошибка:', evt.detail);
-                    latEl.textContent = 'ошибка';
-                    lngEl.textContent = 'ошибка';
-                    timestampEl.innerHTML = '<span class="warning">ошибка GPS</span>';
-                });
             });
+
+            // Первоначальное обновление (если компонент уже готов)
+            setTimeout(updateCoordinatesFromAR, 500);
         })();
     </script>
 
