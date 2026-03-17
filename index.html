@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physics-system@v4.0.1/dist/aframe-physics-system.js"></script>    
+<script src="https://unpkg.com/aframe-event-set-component@5.x.x/dist/aframe-event-set-component.min.js"></script>    <script src="https://rawgit.com/mayognaise/aframe-mouse-cursor-component/master/dist/aframe-mouse-cursor-component.min.js"></script>
+<style>
+        body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; }
+    </style>
+</head>
+<body>
+    <a-scene physics="debug: false;" background="color: #87CEEB">
+
+        <a-assets>
+            <img id="cat" src="cat-laughing-4.jpg">
+   
+            <img id="ground-texture" src="OIP (2).webp">
+            <img id="sky-texture" src="R.jpg">
+            <img id="fire" src="fire.webp">
+            
+            <a-asset-item id="model" src="new.glb"></a-asset-item>
+            <audio id="buzz-sound" src="buzzer-meme-sound.mp3" preload="auto" loop crossorigin="anonymous"></audio>
+
+            <audio id="sound" src="cat-laughing.mp3" preload="auto" loop crossorigin="anonymous"></audio>
+           
+        </a-assets>
+
+        <a-sky src="#sky-texture" rotation="0 -90 0"></a-sky>
+
+        <a-light type="directional" position="2 5 3" intensity="1" castshadow="true"></a-light>
+
+        <a-plane id="ground" src="#ground-texture" rotation="-90 0 0" width="30" height="30" repeat="10 10" static-body class="ground" material="roughness:0.8; metalness:0.2"></a-plane>
+
+        <a-image src="#fire" position="-5 1 0" scale="2 1 0.1" rotation="0 90 0" transparent="true"></a-image>
+
+        
+        <a-entity scale="0.5 0.5 0.5" id="parent-group" position="0 1 0" >
+            <a-entity gltf-model="#model" id="mod" scale="0.5 0.5 0.5" position="10 0 0" animation="property: position; to: -10 0 0; dur: 4000; easing: linear" ></a-entity>
+        </a-entity>
+        
+        <a-entity game-controller="score: 0; winScore: 8; gameActive: true"></a-entity>
+        
+        <a-box dynamic-body="mass: 1; shape: box" position="0 3 -5"></a-box>
+ 
+        <a-box position="0 0 3" static-body width="0.4" height="3">
+            <a-circle id="button" position="0 1.3 0.51" radius="0.1" color="#f00"
+                            event-set__enter="_event: mouseenter; color: #faa"
+                            event-set__leave="_event: mouseleave; color: #f00"
+                            event-set__click="_event: mousedown; color: #a00"
+                            event-set__unclick="_event: mouseup; color: #faa"
+                            event-set__buzz="_event: mousedown; _target=buzz;  components.sound.playSound()" ></a-circle>
+
+        </a-box>
+
+
+        <a-camera  id="camera" wasd-controls="fly: false; acceleration: 400" position="0 1.6 5">
+            <a-text id="score-text" value="0" position="-1.5 0.7 -1" scale="0.5 0.5 0.5" color="yellow" ></a-text>
+            <a-sound src="#buzz-sound" id="buzz" volume="0.05"></a-sound>
+ 
+            <a-sound src="#sound" id="gameoversound" volume="0.3"></a-sound>
+            <a-image src="#cat" id="gameoverimage" visible="false" position="0 0 -0.55" scale="2 1 0.1" transparent="true"></a-image>
+
+            <a-cursor></a-cursor>
+        </a-camera>
+
+
+        <script>
+                (function() {
+                const scene = document.querySelector('a-scene');
+                    scene.addEventListener('loaded', function initGame() {
+                        const buzz = document.getElementById('buzz');
+                        const button = document.getElementById('button');
+                        const model = document.getElementById('mod');
+                        const scoreText = document.getElementById('score-text');
+                        const camera = document.getElementById('camera');
+
+                        let gameOverImage = document.getElementById('gameoverimage');
+                        let gameOverSound = document.getElementById('gameoversound');
+
+
+                        let score = 0;
+                        let gameActive = true;
+
+                        function updateScoreDisplay() {
+                            buzz.components.sound.playSound()
+
+                            scoreText.setAttribute('value', score.toString());
+                        }
+
+                        function resetModel() {
+                            model.removeAttribute('animation');
+                            model.setAttribute('position', '10 0 0');
+                            model.setAttribute('animation', {
+                                property: 'position',
+                                to: '-10 0 0',
+                                dur: 4000,
+                                easing: 'linear'
+                            });
+                        }
+
+            
+                        function gameOver() {
+                            if (gameActive) {
+                                gameActive = false;
+                                gameOverImage.setAttribute('visible', 'true');
+                                gameOverSound.components.sound.playSound()
+                                model.removeAttribute('animation');
+                            }
+                        }
+
+
+                        button.addEventListener('click', function onClick() {
+                            if (!gameActive) return;          
+                            score++;                           
+                            updateScoreDisplay();               
+                            resetModel();                        
+                        });
+
+                        model.addEventListener('animationcomplete', function onAnimationComplete() {
+                            gameOver();                         
+                        });
+
+                        updateScoreDisplay();
+                    });
+            })();
+            
+            
+        </script>
+    </a-scene>
+</body>
+</html>

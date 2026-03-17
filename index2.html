@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Location-based AR with AR.js</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+</head>
+<body style="margin: 0; overflow: hidden;">
+  <a-scene
+    vr-mode-ui="enabled: false"
+    arjs="sourceType: webcam; sourceWidth:1280; sourceHeight:960; displayWidth: 1280; displayHeight: 960; debugUIEnabled: false; trackingMethod: best; locationBased: true;"
+    embedded>
+    
+    <a-camera gps-camera rotation-reader></a-camera>
+
+    <!-- <a-box
+      material="color: cyan;"
+      gps-entity-place="latitude: 55.7558; longitude: 37.6173;"
+      scale="5 5 5"
+      position="0 0 0">
+    </a-box> -->
+    
+    <a-entity
+      text="value: Привет из Москвы; color: red; align: center;"
+      gps-entity-place="latitude: 55.7558; longitude: 37.6175;"
+      scale="10 10 10">
+    </a-entity>
+  </a-scene>
+  
+  <script>
+    if (!navigator.geolocation) {
+      alert('Geolocation не поддерживается браузером');
+    }
+  </script>
+</body>
+</html>
