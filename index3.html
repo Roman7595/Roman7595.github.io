@@ -49,7 +49,6 @@
          Куб – 1 м на север<br>
          Сфера – 2 м на восток<br>
          Цилиндр – 3 м на юго-запад
-         абоба
     </div>
 
     <div id="gps-coordinates">
@@ -115,17 +114,30 @@
                 }
             }
 
-                        setInterval(() => {
+            function updateCoordinatesFromAR() {
                 const camera = document.getElementById('camera');
-                if (camera && camera.components && camera.components['gps-camera']) {
-                    const pos = camera.components['gps-camera'].currentPosition;
-                    if (pos) {
-                        document.getElementById('lat').textContent = pos.latitude.toFixed(6);
-                        document.getElementById('lng').textContent = pos.longitude.toFixed(6);
-                        document.getElementById('timestamp').textContent = formatTime(new Date());
-                    }
+                if (!camera) return;
+
+                // Получаем компонент gps-camera
+                const gpsComponent = camera.components && camera.components['gps-camera'];
+                if (!gpsComponent) return;
+
+                // Текущая позиция хранится в gpsComponent.currentPosition
+                const pos = gpsComponent.currentPosition;
+                if (pos && typeof pos.latitude === 'number' && typeof pos.longitude === 'number') {
+                    latEl.textContent = pos.latitude.toFixed(6);
+                    lngEl.textContent = pos.longitude.toFixed(6);
+                    timestampEl.textContent = formatTime(new Date());
+                } else {
+                    // Если координат ещё нет, показываем ожидание
+                    latEl.textContent = '--';
+                    lngEl.textContent = '--';
+                    timestampEl.innerHTML = '<span class="warning">ожидание GPS...</span>';
                 }
-            }, 2000);
+            }
+
+            setInterval(updateCoordinatesFromAR, 1000);
+
 
             // Ждём загрузки сцены и получения доступа к камере
             document.querySelector('a-scene').addEventListener('loaded', function () {
