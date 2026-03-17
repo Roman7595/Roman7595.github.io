@@ -49,7 +49,7 @@
          Куб – 1 м на север<br>
          Сфера – 2 м на восток<br>
          Цилиндр – 3 м на юго-запад<br>
-         абобА
+         абобАaa
     </div>
 
     <div id="gps-coordinates">
@@ -61,7 +61,7 @@
     <!-- AR-сцена -->
     <a-scene id="scene" embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono;">
         <!-- Камера с поддержкой GPS -->
-        <a-camera id="camera" gps-new-camera="gpsMinDistance: 10;"></a-camera>
+        <a-camera id="camera" gps-camera="gpsMinDistance:0.001;"></a-camera>
 
         <!-- Объекты, размещённые относительно текущей позиции пользователя -->
         <!-- Куб в 10 метрах к северу (heading = 0°) -->
