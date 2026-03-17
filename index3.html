@@ -23,8 +23,8 @@
 </head>
 <body>
     <div id="info">
-        🔵 Куб – 10 м на север<br>
-        🔴 Сфера – 10 м на восток
+        🔵 Куб – 1 м на север<br>
+        🔴 Сфера – 1 м на восток
     </div>
 
     <!-- AR-сцена -->
@@ -44,7 +44,7 @@
         <!-- Сфера в 10 метрах к востоку (heading = 90°) -->
         <a-sphere
             material="color: red;"
-            gps-projected-entity="distance: 10; heading: 90;"
+            gps-projected-entity="distance: 1; heading: 90;"
             radius="0.5"
             position="0 1 -5">
         </a-sphere>
@@ -52,7 +52,7 @@
         <!-- Дополнительный объект – цилиндр на юго-запад (225°) -->
         <a-cylinder
             material="color: green;"
-            gps-projected-entity="distance: 15; heading: 225;"
+            gps-projected-entity="distance: 1; heading: 225;"
             radius="0.5"
             height="1.5"
             position="0 0.75 -5">
